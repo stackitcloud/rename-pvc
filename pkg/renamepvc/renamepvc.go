@@ -82,7 +82,6 @@ func (o *renamePVCOptions) run(ctx context.Context, oldName, newName string) err
 	}
 
 	// check conformation
-	// TODO: add a check for value of o.confirm
 	if err := o.confirmCheck(oldName, newName, namespace); err != nil {
 		return err
 	}
@@ -110,6 +109,9 @@ func (o *renamePVCOptions) run(ctx context.Context, oldName, newName string) err
 }
 
 func (o renamePVCOptions) confirmCheck(oldName, newName, namespace string) error {
+	if o.confirm {
+		return nil
+	}
 	_, err := fmt.Fprintf(o.streams.Out, "Rename PVC from '%s' to '%s' in namespace '%v'? (yes or no) ", oldName, newName, namespace)
 	if err != nil {
 		return err
