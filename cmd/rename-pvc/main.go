@@ -6,7 +6,7 @@ import (
 	"os/signal"
 	"syscall"
 
-	rename "github.com/stackitcloud/pvc-rename/pkg/renamepvc"
+	rename "github.com/stackitcloud/rename-pvc/pkg/renamepvc"
 	"k8s.io/cli-runtime/pkg/genericclioptions"
 )
 

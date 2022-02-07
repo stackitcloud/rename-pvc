@@ -1,4 +1,4 @@
-module github.com/stackitcloud/pvc-rename
+module github.com/stackitcloud/rename-pvc
 
 go 1.17
 
