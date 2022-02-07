@@ -48,9 +48,10 @@ func NewCmdRenamePVC(streams genericclioptions.IOStreams) *cobra.Command {
 
 	cmd := &cobra.Command{
 		Use:     fmt.Sprintf("%v [pvc name] [new pvc name]", command),
-		Short:   "Rename persistent volume claims",
+		Short:   "Rename a persistentVolumeClaim",
 		Example: fmt.Sprintf("%v oldPvcName newPvcName", command),
-		// TODO: add `Long` description here about what it does and how it achieves that.
+		Long: `Rename a persistentVolumeClaim with an creation of a new persistentVolumeClaim and rebind the ` +
+			`existing persistentVolume to the new Claim and deletes the old persistentVolumeClaim.`,
 		Args:         cobra.ExactArgs(2), //nolint: gomnd // needs always 2 inputs
 		SilenceUsage: true,
 		RunE: func(c *cobra.Command, args []string) error {
