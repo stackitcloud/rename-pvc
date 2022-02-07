@@ -63,44 +63,28 @@ func NewCmdRenamePVC(streams genericclioptions.IOStreams) *cobra.Command {
 	return cmd
 }
 
-// TODO: docstrings should be in the common format described here: https://go.dev/blog/godoc. -> Start with the name of the function. Write normal text with proper punctuation.
-// TODO: Also the steps described here would rather fit into the Long command description and are not needed to understand the function.
-// rename the PVC from oldName to newName
-// renaming of objects in Kubernetes is not supported therefore it is done with recreating
-// to no lose the PersistentVolume it is done with the following steps:
-// 1. create the new PVC with the new name
-// 2. change the claimRef in the PersistentVolume to the new PVC
-// 3. wait until the new PVC is bound to the PersistentVolume
-// 4. delete old PVC
+// run manages the workflow for renaming a pvc from oldName to newName
 func (o *renamePVCOptions) run(ctx context.Context, oldName, newName string) error {
-	// TODO: The code is pretty much self explanatory so the comments are not needed.
-	// TODO: in code docs should only explain why a certain thing is done and not what is done, since that is already visible. In this case I don't think any docs are needed in the function.
-
-	// get current namespace
 	namespace, _, err := o.configFlags.ToRawKubeConfigLoader().Namespace()
 	if err != nil {
 		return err
 	}
 
-	// check conformation
 	if err := o.confirmCheck(oldName, newName, namespace); err != nil {
 		return err
 	}
 
-	// init kubernetes client
 	k8sClient, err := o.getK8sClient()
 	if err != nil {
 		return err
 	}
 
-	// get old pvc
 	var oldPvc *corev1.PersistentVolumeClaim
 	oldPvc, err = k8sClient.CoreV1().PersistentVolumeClaims(namespace).Get(ctx, oldName, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
 
-	// check if pvc is mounted
 	err = checkIfMounted(ctx, k8sClient, oldPvc)
 	if err != nil {
 		return err
@@ -139,6 +123,7 @@ func (o renamePVCOptions) getK8sClient() (*kubernetes.Clientset, error) {
 	return kubernetes.NewForConfig(config)
 }
 
+// checkIfMounted returns an error ig the volume is mounted in a pod
 func checkIfMounted(ctx context.Context, k8sClient *kubernetes.Clientset, pvc *corev1.PersistentVolumeClaim) error {
 	podList, err := k8sClient.CoreV1().Pods(pvc.Namespace).List(ctx, metav1.ListOptions{})
 	if err != nil {
@@ -155,6 +140,7 @@ func checkIfMounted(ctx context.Context, k8sClient *kubernetes.Clientset, pvc *c
 	return nil
 }
 
+// waitUntilPvcIsBound waits util the pvc is in state Bound, with a timeout of 60 sec
 func waitUntilPvcIsBound(ctx context.Context, k8sClient *kubernetes.Clientset, pvc *corev1.PersistentVolumeClaim) error {
 	for i := 0; i <= 60; i++ {
 		checkPVC, err := k8sClient.CoreV1().PersistentVolumeClaims(pvc.Namespace).Get(ctx, pvc.GetName(), metav1.GetOptions{})
@@ -176,6 +162,7 @@ func waitUntilPvcIsBound(ctx context.Context, k8sClient *kubernetes.Clientset, p
 	return ErrNotBound
 }
 
+// rename the oldPvc to newName
 func (o renamePVCOptions) rename(
 	ctx context.Context,
 	k8sClient *kubernetes.Clientset,
