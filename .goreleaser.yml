@@ -1,0 +1,33 @@
+project_name: rename-pvc
+
+snapshot:
+  name_template: '{{ .Tag }}-SNAPSHOT'
+
+before:
+  hooks:
+    - go mod tidy
+
+dist: bin
+
+builds:
+  - id: rename-pvc
+    env:
+      - CGO_ENABLED=0
+    main: ./cmd/rename-pvc
+    ldflags:
+      - -s
+      - -w
+    goos:
+      - linux
+      - windows
+      - darwin
+    ignore:
+      - goos: windows
+        goarch: arm64
+    goarch:
+      - amd64
+      - arm64
+
+archives:
+  - format: binary
+    name_template: '{{ .ProjectName }}-{{ .Os }}-{{ .Arch }}'
