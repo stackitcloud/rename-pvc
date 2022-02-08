@@ -79,8 +79,7 @@ func (o *renamePVCOptions) run(ctx context.Context, oldName, newName string) err
 		return err
 	}
 
-	var oldPvc *corev1.PersistentVolumeClaim
-	oldPvc, err = k8sClient.CoreV1().PersistentVolumeClaims(namespace).Get(ctx, oldName, metav1.GetOptions{})
+	oldPvc, err := k8sClient.CoreV1().PersistentVolumeClaims(namespace).Get(ctx, oldName, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -123,7 +122,7 @@ func (o renamePVCOptions) getK8sClient() (*kubernetes.Clientset, error) {
 	return kubernetes.NewForConfig(config)
 }
 
-// checkIfMounted returns an error ig the volume is mounted in a pod
+// checkIfMounted returns an error if the volume is mounted in a pod
 func checkIfMounted(ctx context.Context, k8sClient *kubernetes.Clientset, pvc *corev1.PersistentVolumeClaim) error {
 	podList, err := k8sClient.CoreV1().Pods(pvc.Namespace).List(ctx, metav1.ListOptions{})
 	if err != nil {
