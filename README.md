@@ -2,7 +2,7 @@
 
 `pvc-rename` can rename persistentVolumeClaims (PVC) inside kubernetes. 
 
-:warning: Be sure that you create a backup of your data in this PVC before!
+:warning: Be sure to create a backup of your data in the PVC before you use `rename-pvc`!
 
 ## Installation
 
@@ -17,14 +17,14 @@ go install github.com/stackitcloud/rename-pvc/cmd/rename-pvc@latest
 > Make sure to add the respective directory to your `$PATH`.
 > [For more information see go docs for further information](https://golang.org/ref/mod#go-install). Run `go env` to view your current configuration.
 
-#### From the released binaries
+### From the released binaries
 
 Download the desired version for your operating system and processor architecture from the [rename-pvc releases page](https://github.com/stackitcloud/rename-pvc/releases).
 Make the file executable and place it in a directory available in your `$PATH`.
 
 ## Usage
 
-To rename an PVC from `pvc-name` to `new-pvc-name` run the command:
+To rename a PVC from `pvc-name` to `new-pvc-name` run the command:
 
 ```bash
 rename-pvc pvc-name new-pvc-name
