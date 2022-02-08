@@ -1,6 +1,6 @@
-# pvc-rename
+# rename-pvc
 
-`pvc-rename` can rename persistentVolumeClaims (PVC) inside kubernetes. 
+`rename-pvc` can rename persistentVolumeClaims (PVC) inside kubernetes. 
 
 :warning: Be sure to create a backup of your data in the PVC before you use `rename-pvc`!
 
@@ -84,4 +84,4 @@ Flags:
 
 ## Contribution
 
-// TODO 
+If you want to contribute to `rename-pvc` please have a look at our [contribution guidelines](CONTRIBUTING.md).
