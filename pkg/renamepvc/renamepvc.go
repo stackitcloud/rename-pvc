@@ -131,7 +131,7 @@ func checkIfMounted(ctx context.Context, k8sClient *kubernetes.Clientset, pvc *c
 	for pod := range podList.Items {
 		for vol := range podList.Items[pod].Spec.Volumes {
 			volume := &podList.Items[pod].Spec.Volumes[vol]
-			if volume.PersistentVolumeClaim == nil && volume.PersistentVolumeClaim.ClaimName == pvc.Name {
+			if volume.PersistentVolumeClaim != nil && volume.PersistentVolumeClaim.ClaimName == pvc.Name {
 				return errors.Wrapf(ErrVolumeAlreadyMounted, "pod %s", podList.Items[pod].Name)
 			}
 		}
