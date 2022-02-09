@@ -47,18 +47,19 @@ func NewCmdRenamePVC(streams genericclioptions.IOStreams) *cobra.Command {
 	}
 
 	cmd := &cobra.Command{
-		Use:     fmt.Sprintf("%v [pvc name] [new pvc name]", command),
-		Short:   "Rename a persistentVolumeClaim",
-		Example: fmt.Sprintf("%v oldPvcName newPvcName", command),
-		Long: `Rename a persistentVolumeClaim with an creation of a new persistentVolumeClaim and rebind the ` +
-			`existing persistentVolume to the new Claim and deletes the old persistentVolumeClaim.`,
+		Use:   fmt.Sprintf("%v [pvc name] [new pvc name]", command),
+		Short: "Rename a PersistentVolumeClaim (PVC)",
+		Long: `rename-pvc renames an existing PersistentVolumeClaim (PVC) by creating a new PVC
+with the same spec and rebinding the existing PersistentClaim (PV) to the newly created PVC.
+Afterwards the old PVC is automatically deleted.`,
+		Example:      fmt.Sprintf("%v oldPvcName newPvcName", command),
 		Args:         cobra.ExactArgs(2), //nolint: gomnd // needs always 2 inputs
 		SilenceUsage: true,
 		RunE: func(c *cobra.Command, args []string) error {
 			return o.run(c.Context(), args[0], args[1])
 		},
 	}
-	cmd.Flags().BoolVarP(&o.confirm, "yes", "y", false, "Skips conformation if flag is set")
+	cmd.Flags().BoolVarP(&o.confirm, "yes", "y", false, "Skips confirmation if flag is set")
 	o.configFlags.AddFlags(cmd.Flags())
 	return cmd
 }
