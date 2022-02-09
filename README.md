@@ -1,8 +1,8 @@
 # rename-pvc
 
-`rename-pvc` can rename persistentVolumeClaims (PVC) inside kubernetes. 
+`rename-pvc` can rename PersistentVolumeClaims (PVCs) inside Kubernetes.
 
-:warning: Be sure to create a backup of your data in the PVC before you use `rename-pvc`!
+:warning: Be sure to create a backup of your data in the PVC before using `rename-pvc`!
 
 ## Installation
 
@@ -13,24 +13,26 @@ If you have Go 1.16+, you can directly install by running:
 ```bash
 go install github.com/stackitcloud/rename-pvc/cmd/rename-pvc@latest
 ```
-> Based on your go configuration the `go/template` binary can be found in `$GOPATH/bin` or `$HOME/go/bin` in case `$GOPATH` is not set.
+> Based on your go configuration the `rename-pvc` binary can be found in `$GOPATH/bin` or `$HOME/go/bin` in case `$GOPATH` is not set.
 > Make sure to add the respective directory to your `$PATH`.
 > [For more information see go docs for further information](https://golang.org/ref/mod#go-install). Run `go env` to view your current configuration.
 
 ### From the released binaries
 
-Download the desired version for your operating system and processor architecture from the [rename-pvc releases page](https://github.com/stackitcloud/rename-pvc/releases).
+Download the desired version for your operating system and processor architecture from the [`rename-pvc` releases page](https://github.com/stackitcloud/rename-pvc/releases).
 Make the file executable and place it in a directory available in your `$PATH`.
 
 ## Usage
 
 To rename a PVC from `pvc-name` to `new-pvc-name` run the command:
 
-```bash
+```shell
 rename-pvc pvc-name new-pvc-name
 ```
+
 Example Output:
-```
+
+```shell
 Rename PVC from 'pvc-name' to 'new-pvc-name' in namespace 'default'? (yes or no) yes
 New PVC with name 'new-pvc-name' created
 ClaimRef of PV 'pvc-2dc982d6-72a0-4e80-b1a6-126b108d2adf' is updated to new PVC 'new-pvc-name'
@@ -41,7 +43,7 @@ Old PVC 'pvc-name' is deleted
 To select the Namespace and Kubernetes cluster you can use the default `kubectl` flags and environment variables (like `--namespace`, `--kubeconfig` or the `KUBECONFIG` environment variable).
 For all options run `--help`.
 
-```
+```shell
 Flags:
       --as string                      Username to impersonate for the operation. User could be a regular user or a service account in a namespace.
       --as-group stringArray           Group to impersonate for the operation, this flag can be repeated to specify multiple groups.
@@ -68,11 +70,11 @@ Flags:
 
 `rename-pvc` runs the following steps to rename an PVC in your Kubernetes cluster:
 
-1. creates the new PVC with the `.spec.volumeName` set to the existing PVC
-   * This new PVC is now in status `Lost`
-2. updates the `spec.claimRef` in the `PersistentVolume` to the new PVC
-3. Wait until the new PVC gets in status `Bound`
-4. Deletes old PVC
+1. Creates the new PVC with the `.spec.volumeName` set to the existing PVC
+   - This new PVC is now in status `Lost`
+2. Updates the `spec.claimRef` in the `PersistentVolume` to the new PVC
+3. Waits until the new PVC's status is updated to `Bound`
+4. Deletes the old PVC
 
 ## Maintainers
 
