@@ -6,6 +6,19 @@
 
 ## Installation
 
+### From krew plugin manager
+
+See [krew install guide.](https://krew.sigs.k8s.io/docs/user-guide/setup/install/)
+
+Update krew packages and install `rename-pvc`:
+
+```shell
+kubectl krew update
+kubectl krew install rename-pvc
+```
+
+Now you can use `rename-pvc` with `kubectl rename-pvc`.
+
 ### From source
 
 If you have Go 1.16+, you can directly install by running:
