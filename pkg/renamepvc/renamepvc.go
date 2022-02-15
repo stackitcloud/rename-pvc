@@ -77,8 +77,8 @@ Afterwards the old PVC is automatically deleted.`,
 		},
 	}
 	cmd.Flags().BoolVarP(&o.confirm, "yes", "y", false, "Skips confirmation if flag is set")
-	cmd.Flags().StringVar(&o.targetNamespace, "target-namespace", "",
-		"Defines the in which namespace the new PVC should located. Default is set to the same Namespace as the source PVC")
+	cmd.Flags().StringVarP(&o.targetNamespace, "target-namespace", "N", "",
+		"Defines in which namespace the new PVC should be created. By default the source PVC's namespace is used.")
 	o.configFlags.AddFlags(cmd.Flags())
 	return cmd
 }
