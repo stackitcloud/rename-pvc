@@ -31,7 +31,11 @@ type renamePVCOptions struct {
 	streams     genericclioptions.IOStreams
 	configFlags *genericclioptions.ConfigFlags
 
-	confirm bool
+	confirm         bool
+	oldName         string
+	newName         string
+	sourceNamespace string
+	targetNamespace string
 }
 
 // NewCmdRenamePVC returns the cobra command for the pvc rename
@@ -56,22 +60,32 @@ Afterwards the old PVC is automatically deleted.`,
 		Args:         cobra.ExactArgs(2), //nolint: gomnd // needs always 2 inputs
 		SilenceUsage: true,
 		RunE: func(c *cobra.Command, args []string) error {
-			return o.run(c.Context(), args[0], args[1])
+			var err error
+			o.sourceNamespace, _, err = o.configFlags.ToRawKubeConfigLoader().Namespace()
+			if err != nil {
+				return err
+			}
+
+			if o.targetNamespace == "" {
+				o.targetNamespace = o.sourceNamespace
+			}
+
+			o.oldName = args[0]
+			o.newName = args[1]
+
+			return o.run(c.Context())
 		},
 	}
 	cmd.Flags().BoolVarP(&o.confirm, "yes", "y", false, "Skips confirmation if flag is set")
+	cmd.Flags().StringVar(&o.targetNamespace, "target-namespace", "",
+		"Defines the in which namespace the new PVC should located. Default is set to the same Namespace as the source PVC")
 	o.configFlags.AddFlags(cmd.Flags())
 	return cmd
 }
 
 // run manages the workflow for renaming a pvc from oldName to newName
-func (o *renamePVCOptions) run(ctx context.Context, oldName, newName string) error {
-	namespace, _, err := o.configFlags.ToRawKubeConfigLoader().Namespace()
-	if err != nil {
-		return err
-	}
-
-	if err := o.confirmCheck(oldName, newName, namespace); err != nil {
+func (o *renamePVCOptions) run(ctx context.Context) error {
+	if err := o.confirmCheck(); err != nil {
 		return err
 	}
 
@@ -80,7 +94,7 @@ func (o *renamePVCOptions) run(ctx context.Context, oldName, newName string) err
 		return err
 	}
 
-	oldPvc, err := k8sClient.CoreV1().PersistentVolumeClaims(namespace).Get(ctx, oldName, metav1.GetOptions{})
+	oldPvc, err := k8sClient.CoreV1().PersistentVolumeClaims(o.sourceNamespace).Get(ctx, o.oldName, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
@@ -90,14 +104,16 @@ func (o *renamePVCOptions) run(ctx context.Context, oldName, newName string) err
 		return err
 	}
 
-	return o.rename(ctx, k8sClient, oldPvc, newName, namespace)
+	return o.rename(ctx, k8sClient, oldPvc)
 }
 
-func (o renamePVCOptions) confirmCheck(oldName, newName, namespace string) error {
+func (o *renamePVCOptions) confirmCheck() error {
 	if o.confirm {
 		return nil
 	}
-	_, err := fmt.Fprintf(o.streams.Out, "Rename PVC from '%s' to '%s' in namespace '%v'? (yes or no) ", oldName, newName, namespace)
+	_, err := fmt.Fprintf(o.streams.Out,
+		"Rename PVC from '%s' in namespace '%s' to '%s' in namespace '%v'? (yes or no) ",
+		o.oldName, o.sourceNamespace, o.newName, o.targetNamespace)
 	if err != nil {
 		return err
 	}
@@ -115,7 +131,7 @@ func (o renamePVCOptions) confirmCheck(oldName, newName, namespace string) error
 	}
 }
 
-func (o renamePVCOptions) getK8sClient() (*kubernetes.Clientset, error) {
+func (o *renamePVCOptions) getK8sClient() (*kubernetes.Clientset, error) {
 	config, err := o.configFlags.ToRESTConfig()
 	if err != nil {
 		return nil, err
@@ -163,28 +179,27 @@ func waitUntilPvcIsBound(ctx context.Context, k8sClient *kubernetes.Clientset, p
 }
 
 // rename the oldPvc to newName
-func (o renamePVCOptions) rename(
+func (o *renamePVCOptions) rename(
 	ctx context.Context,
 	k8sClient *kubernetes.Clientset,
 	oldPvc *corev1.PersistentVolumeClaim,
-	newPvcName,
-	namespace string,
 ) error {
 	// get new pvc with old PVC inputs
 	newPvc := oldPvc.DeepCopy()
 	newPvc.Status = corev1.PersistentVolumeClaimStatus{}
-	newPvc.Name = newPvcName
+	newPvc.Name = o.newName
 	newPvc.UID = ""
 	newPvc.CreationTimestamp = metav1.Now()
 	newPvc.SelfLink = ""
 	newPvc.ResourceVersion = ""
+	newPvc.Namespace = o.targetNamespace
 
 	pv, err := k8sClient.CoreV1().PersistentVolumes().Get(ctx, oldPvc.Spec.VolumeName, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
 
-	newPvc, err = k8sClient.CoreV1().PersistentVolumeClaims(namespace).Create(ctx, newPvc, metav1.CreateOptions{})
+	newPvc, err = k8sClient.CoreV1().PersistentVolumeClaims(o.targetNamespace).Create(ctx, newPvc, metav1.CreateOptions{})
 	if err != nil {
 		return err
 	}
@@ -210,7 +225,7 @@ func (o renamePVCOptions) rename(
 	}
 	_, _ = fmt.Fprintf(o.streams.Out, "New PVC '%s' is bound to PV '%s'\n", newPvc.Name, pv.Name)
 
-	err = k8sClient.CoreV1().PersistentVolumeClaims(namespace).Delete(ctx, oldPvc.Name, metav1.DeleteOptions{})
+	err = k8sClient.CoreV1().PersistentVolumeClaims(o.sourceNamespace).Delete(ctx, oldPvc.Name, metav1.DeleteOptions{})
 	if err != nil {
 		return err
 	}
