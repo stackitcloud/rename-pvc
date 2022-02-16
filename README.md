@@ -46,12 +46,14 @@ rename-pvc pvc-name new-pvc-name
 Example Output:
 
 ```shell
-Rename PVC from 'pvc-name' to 'new-pvc-name' in namespace 'default'? (yes or no) yes
+Rename PVC from 'pvc-name' in namespace 'default' to 'new-pvc-name' in namespace 'default'? (yes or no) y
 New PVC with name 'new-pvc-name' created
 ClaimRef of PV 'pvc-2dc982d6-72a0-4e80-b1a6-126b108d2adf' is updated to new PVC 'new-pvc-name'
 New PVC 'new-pvc-name' is bound to PV 'pvc-2dc982d6-72a0-4e80-b1a6-126b108d2adf'
 Old PVC 'pvc-name' is deleted
 ```
+
+With the flag `--target-namespace` it is possible to change the namespace of the newly created PVC. `rename-pvc -n test1 --target-namespace test2 pvc-name pvc-name` will create the new PVC in Namespace `test2`.
 
 To select the Namespace and Kubernetes cluster you can use the default `kubectl` flags and environment variables (like `--namespace`, `--kubeconfig` or the `KUBECONFIG` environment variable).
 For all options run `--help`.
@@ -73,6 +75,7 @@ Flags:
   -n, --namespace string               If present, the namespace scope for this CLI request
       --request-timeout string         The length of time to wait before giving up on a single server request. Non-zero values should contain a corresponding time unit (e.g. 1s, 2m, 3h). A value of zero means don't timeout requests. (default "0")
   -s, --server string                  The address and port of the Kubernetes API server
+  -N, --target-namespace string        Defines in which namespace the new PVC should be created. By default the source PVC's namespace is used.
       --tls-server-name string         Server name to use for server certificate validation. If it is not provided, the hostname used to contact the server is used
       --token string                   Bearer token for authentication to the API server
       --user string                    The name of the kubeconfig user to use
