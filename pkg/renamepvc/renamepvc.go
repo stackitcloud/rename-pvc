@@ -21,15 +21,16 @@ import (
 )
 
 var (
-	ErrNotBound             = errors.New("new PVC did not get bound")
-	ErrAcceptationNotYes    = errors.New("conformation was not successful please type in yes to continue")
-	ErrAcceptationUnknown   = errors.New("please type yes or no")
-	ErrVolumeAlreadyMounted = errors.New("volume already mounted")
+	ErrNotBound           = errors.New("new PVC did not get bound")
+	ErrAcceptationNotYes  = errors.New("conformation was not successful please type in yes to continue")
+	ErrAcceptationUnknown = errors.New("please type yes or no")
+	ErrVolumeMounted      = errors.New("volume currently mounted")
 )
 
 type renamePVCOptions struct {
 	streams     genericclioptions.IOStreams
 	configFlags *genericclioptions.ConfigFlags
+	k8sClient   kubernetes.Interface
 
 	confirm         bool
 	oldName         string
@@ -73,6 +74,10 @@ Afterwards the old PVC is automatically deleted.`,
 			o.oldName = args[0]
 			o.newName = args[1]
 
+			o.k8sClient, err = getK8sClient(o.configFlags)
+			if err != nil {
+				return err
+			}
 			return o.run(c.Context())
 		},
 	}
@@ -89,22 +94,17 @@ func (o *renamePVCOptions) run(ctx context.Context) error {
 		return err
 	}
 
-	k8sClient, err := o.getK8sClient()
+	oldPvc, err := o.k8sClient.CoreV1().PersistentVolumeClaims(o.sourceNamespace).Get(ctx, o.oldName, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
 
-	oldPvc, err := k8sClient.CoreV1().PersistentVolumeClaims(o.sourceNamespace).Get(ctx, o.oldName, metav1.GetOptions{})
+	err = o.checkIfMounted(ctx, oldPvc)
 	if err != nil {
 		return err
 	}
 
-	err = checkIfMounted(ctx, k8sClient, oldPvc)
-	if err != nil {
-		return err
-	}
-
-	return o.rename(ctx, k8sClient, oldPvc)
+	return o.rename(ctx, oldPvc)
 }
 
 func (o *renamePVCOptions) confirmCheck() error {
@@ -131,8 +131,8 @@ func (o *renamePVCOptions) confirmCheck() error {
 	}
 }
 
-func (o *renamePVCOptions) getK8sClient() (*kubernetes.Clientset, error) {
-	config, err := o.configFlags.ToRESTConfig()
+func getK8sClient(configFlags *genericclioptions.ConfigFlags) (*kubernetes.Clientset, error) {
+	config, err := configFlags.ToRESTConfig()
 	if err != nil {
 		return nil, err
 	}
@@ -140,8 +140,8 @@ func (o *renamePVCOptions) getK8sClient() (*kubernetes.Clientset, error) {
 }
 
 // checkIfMounted returns an error if the volume is mounted in a pod
-func checkIfMounted(ctx context.Context, k8sClient *kubernetes.Clientset, pvc *corev1.PersistentVolumeClaim) error {
-	podList, err := k8sClient.CoreV1().Pods(pvc.Namespace).List(ctx, metav1.ListOptions{})
+func (o *renamePVCOptions) checkIfMounted(ctx context.Context, pvc *corev1.PersistentVolumeClaim) error {
+	podList, err := o.k8sClient.CoreV1().Pods(pvc.Namespace).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return err
 	}
@@ -149,7 +149,7 @@ func checkIfMounted(ctx context.Context, k8sClient *kubernetes.Clientset, pvc *c
 		for vol := range podList.Items[pod].Spec.Volumes {
 			volume := &podList.Items[pod].Spec.Volumes[vol]
 			if volume.PersistentVolumeClaim != nil && volume.PersistentVolumeClaim.ClaimName == pvc.Name {
-				return errors.Wrapf(ErrVolumeAlreadyMounted, "pod %s", podList.Items[pod].Name)
+				return errors.Wrapf(ErrVolumeMounted, "pod %s", podList.Items[pod].Name)
 			}
 		}
 	}
@@ -157,9 +157,9 @@ func checkIfMounted(ctx context.Context, k8sClient *kubernetes.Clientset, pvc *c
 }
 
 // waitUntilPvcIsBound waits util the pvc is in state Bound, with a timeout of 60 sec
-func waitUntilPvcIsBound(ctx context.Context, k8sClient *kubernetes.Clientset, pvc *corev1.PersistentVolumeClaim) error {
+func (o *renamePVCOptions) waitUntilPvcIsBound(ctx context.Context, pvc *corev1.PersistentVolumeClaim) error {
 	for i := 0; i <= 60; i++ {
-		checkPVC, err := k8sClient.CoreV1().PersistentVolumeClaims(pvc.Namespace).Get(ctx, pvc.GetName(), metav1.GetOptions{})
+		checkPVC, err := o.k8sClient.CoreV1().PersistentVolumeClaims(pvc.Namespace).Get(ctx, pvc.GetName(), metav1.GetOptions{})
 		if err != nil {
 			return err
 		}
@@ -181,7 +181,6 @@ func waitUntilPvcIsBound(ctx context.Context, k8sClient *kubernetes.Clientset, p
 // rename the oldPvc to newName
 func (o *renamePVCOptions) rename(
 	ctx context.Context,
-	k8sClient *kubernetes.Clientset,
 	oldPvc *corev1.PersistentVolumeClaim,
 ) error {
 	// get new pvc with old PVC inputs
@@ -194,12 +193,12 @@ func (o *renamePVCOptions) rename(
 	newPvc.ResourceVersion = ""
 	newPvc.Namespace = o.targetNamespace
 
-	pv, err := k8sClient.CoreV1().PersistentVolumes().Get(ctx, oldPvc.Spec.VolumeName, metav1.GetOptions{})
+	pv, err := o.k8sClient.CoreV1().PersistentVolumes().Get(ctx, oldPvc.Spec.VolumeName, metav1.GetOptions{})
 	if err != nil {
 		return err
 	}
 
-	newPvc, err = k8sClient.CoreV1().PersistentVolumeClaims(o.targetNamespace).Create(ctx, newPvc, metav1.CreateOptions{})
+	newPvc, err = o.k8sClient.CoreV1().PersistentVolumeClaims(o.targetNamespace).Create(ctx, newPvc, metav1.CreateOptions{})
 	if err != nil {
 		return err
 	}
@@ -213,19 +212,19 @@ func (o *renamePVCOptions) rename(
 		APIVersion:      newPvc.APIVersion,
 		ResourceVersion: newPvc.ResourceVersion,
 	}
-	pv, err = k8sClient.CoreV1().PersistentVolumes().Update(ctx, pv, metav1.UpdateOptions{})
+	pv, err = o.k8sClient.CoreV1().PersistentVolumes().Update(ctx, pv, metav1.UpdateOptions{})
 	if err != nil {
 		return err
 	}
 	_, _ = fmt.Fprintf(o.streams.Out, "ClaimRef of PV '%s' is updated to new PVC '%s'\n", pv.Name, newPvc.Name)
 
-	err = waitUntilPvcIsBound(ctx, k8sClient, newPvc)
+	err = o.waitUntilPvcIsBound(ctx, newPvc)
 	if err != nil {
 		return err
 	}
 	_, _ = fmt.Fprintf(o.streams.Out, "New PVC '%s' is bound to PV '%s'\n", newPvc.Name, pv.Name)
 
-	err = k8sClient.CoreV1().PersistentVolumeClaims(o.sourceNamespace).Delete(ctx, oldPvc.Name, metav1.DeleteOptions{})
+	err = o.k8sClient.CoreV1().PersistentVolumeClaims(o.sourceNamespace).Delete(ctx, oldPvc.Name, metav1.DeleteOptions{})
 	if err != nil {
 		return err
 	}
