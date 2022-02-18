@@ -79,7 +79,7 @@ Flags:
       --tls-server-name string         Server name to use for server certificate validation. If it is not provided, the hostname used to contact the server is used
       --token string                   Bearer token for authentication to the API server
       --user string                    The name of the kubeconfig user to use
-  -y, --yes                            Skips conformation if flag is set
+  -y, --yes                            Skips confirmation if flag is set
 ```
 
 ## How does it work?
