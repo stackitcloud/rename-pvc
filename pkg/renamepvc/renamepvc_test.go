@@ -15,9 +15,9 @@ import (
 )
 
 func TestPVCRename(t *testing.T) {
-	t.Run("Test rename-pvc in same namespace - successfully", func(t *testing.T) {
-		ctx := context.Background()
+	ctx := context.Background()
 
+	t.Run("Test rename-pvc in same namespace - successfully", func(t *testing.T) {
 		o, err := initTestSetup(ctx,
 			"test1-old", "test1",
 			"test1-new", "test1")
@@ -37,8 +37,6 @@ func TestPVCRename(t *testing.T) {
 	})
 
 	t.Run("Test rename-pvc in different namespace - successfully", func(t *testing.T) {
-		ctx := context.Background()
-
 		o, err := initTestSetup(ctx,
 			"test2-old", "test2-old",
 			"test2-new", "test2")
@@ -58,8 +56,6 @@ func TestPVCRename(t *testing.T) {
 	})
 
 	t.Run("Test rename-pvc with running pod - fail", func(t *testing.T) {
-		ctx := context.Background()
-
 		pod := corev1.Pod{
 			ObjectMeta: metav1.ObjectMeta{Name: "pod", Namespace: "test3"},
 			Spec: corev1.PodSpec{
@@ -89,9 +85,7 @@ func TestPVCRename(t *testing.T) {
 		}
 	})
 
-	t.Run("Test rename-pvc with running pod - fail", func(t *testing.T) {
-		ctx := context.Background()
-
+	t.Run("Test rename-pvc with already existing newPvc - fail", func(t *testing.T) {
 		pvc := corev1.PersistentVolumeClaim{
 			ObjectMeta: metav1.ObjectMeta{Name: "test4-new", Namespace: "test4"},
 			Spec: corev1.PersistentVolumeClaimSpec{
@@ -107,6 +101,7 @@ func TestPVCRename(t *testing.T) {
 		if err != nil {
 			t.Errorf("testsetup failed - got error %q", err)
 		}
+
 		ll, _ := o.k8sClient.CoreV1().PersistentVolumeClaims("default").List(ctx, metav1.ListOptions{})
 		_ = ll
 		err = o.run(ctx)
@@ -136,16 +131,16 @@ func TestConfirmCheck(t *testing.T) {
 		streams, in, _, _ := genericclioptions.NewTestIOStreams()
 		o := renamePVCOptions{streams: streams}
 		in.WriteString("n\n")
-		if err := o.confirmCheck(); !errors.Is(err, ErrAcceptationNotYes) {
-			t.Errorf("expect %q - got error %q", ErrAcceptationNotYes, err)
+		if err := o.confirmCheck(); !errors.Is(err, ErrConfirmationNotSuccessful) {
+			t.Errorf("expect %q - got error %q", ErrConfirmationNotSuccessful, err)
 		}
 	})
 	t.Run("Test confirmCheck with unknown", func(t *testing.T) {
 		streams, in, _, _ := genericclioptions.NewTestIOStreams()
 		o := renamePVCOptions{streams: streams}
 		in.WriteString("unknown\n")
-		if err := o.confirmCheck(); !errors.Is(err, ErrAcceptationUnknown) {
-			t.Errorf("expect %q - got error %q", ErrAcceptationUnknown, err)
+		if err := o.confirmCheck(); !errors.Is(err, ErrConfirmationUnknown) {
+			t.Errorf("expect %q - got error %q", ErrConfirmationUnknown, err)
 		}
 	})
 }
@@ -158,21 +153,21 @@ func initTestSetup(
 	extraObjects ...runtime.Object,
 ) (renamePVCOptions, error) {
 	// init client
-	streams, _, _, _ := genericclioptions.NewTestIOStreams() //nolint:dogsled // not needed for tests
+	streams, _, _, _ := genericclioptions.NewTestIOStreams()
 	client := fake.NewSimpleClientset(extraObjects...)
 	// the fake client did not set volumes to bound
 	// add reactor to set every volume to Phase bound
 	client.PrependReactor(
 		"create",
 		"persistentvolumeclaims",
-		func(action k8sTesting.Action) (handled bool, ret runtime.Object, err error) {
-			ret = action.(k8sTesting.CreateAction).GetObject()
-			pvc, ok := ret.(*corev1.PersistentVolumeClaim)
+		func(action k8sTesting.Action) (bool, runtime.Object, error) {
+			obj := action.(k8sTesting.CreateAction).GetObject()
+			pvc, ok := obj.(*corev1.PersistentVolumeClaim)
 			if !ok {
-				return
+				return false, obj, nil
 			}
 			pvc.Status.Phase = corev1.ClaimBound
-			return
+			return false, obj, nil
 		})
 
 	o := renamePVCOptions{

@@ -21,10 +21,10 @@ import (
 )
 
 var (
-	ErrNotBound           = errors.New("new PVC did not get bound")
-	ErrAcceptationNotYes  = errors.New("conformation was not successful please type in yes to continue")
-	ErrAcceptationUnknown = errors.New("please type yes or no")
-	ErrVolumeMounted      = errors.New("volume currently mounted")
+	ErrNotBound                  = errors.New("new PVC did not get bound")
+	ErrConfirmationNotSuccessful = errors.New("confirmation was not successful please type in yes to continue")
+	ErrConfirmationUnknown       = errors.New("please type yes or no")
+	ErrVolumeMounted             = errors.New("volume currently mounted")
 )
 
 type renamePVCOptions struct {
@@ -125,9 +125,9 @@ func (o *renamePVCOptions) confirmCheck() error {
 	case "y", "yes":
 		return nil
 	case "n", "no":
-		return ErrAcceptationNotYes
+		return ErrConfirmationNotSuccessful
 	default:
-		return ErrAcceptationUnknown
+		return ErrConfirmationUnknown
 	}
 }
 
