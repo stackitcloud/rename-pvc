@@ -1,14 +1,14 @@
 module github.com/stackitcloud/rename-pvc
 
-go 1.17
+go 1.18
 
 require (
 	github.com/pkg/errors v0.9.1
-	github.com/spf13/cobra v1.2.1
-	k8s.io/api v0.23.3
-	k8s.io/apimachinery v0.23.3
-	k8s.io/cli-runtime v0.23.3
-	k8s.io/client-go v0.23.3
+	github.com/spf13/cobra v1.4.0
+	k8s.io/api v0.23.5
+	k8s.io/apimachinery v0.23.5
+	k8s.io/cli-runtime v0.23.5
+	k8s.io/client-go v0.23.5
 )
 
 require (
