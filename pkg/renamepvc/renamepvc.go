@@ -189,7 +189,7 @@ func (o *renamePVCOptions) rename(
 	newPvc.Name = o.newName
 	newPvc.UID = ""
 	newPvc.CreationTimestamp = metav1.Now()
-	newPvc.SelfLink = ""
+	newPvc.SelfLink = "" // nolint: staticcheck // to keep compatibility with older versions
 	newPvc.ResourceVersion = ""
 	newPvc.Namespace = o.targetNamespace
 
