@@ -94,11 +94,10 @@ Flags:
 
 ## Maintainers
 
-| Name                                       | Email                             |
-|:-------------------------------------------|:----------------------------------|
-| [@dergeberl](https://github.com/dergeberl) | maximilian.geberl@stackit.de      |
-| [@brumhard](https://github.com/brumhard)   | tobias.brumhard@mail.schwarz      |
-| [@mganter](https://github.com/mganter)     | manuel_stefan.ganter@stackit.de   |
+| Name                                                 | Email                           |
+|:-----------------------------------------------------|:--------------------------------|
+| [@dergeberl](https://github.com/dergeberl)           | maximilian.geberl@stackit.de    |
+| [@einfachnuralex](https://github.com/einfachnuralex) | alexander.predeschly@stackit.de |
 
 ## Contribution
 
