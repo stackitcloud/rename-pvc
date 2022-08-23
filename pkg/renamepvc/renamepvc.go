@@ -3,13 +3,13 @@ package renamepvc
 import (
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
-	"github.com/pkg/errors"
 	"github.com/spf13/cobra"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -149,7 +149,7 @@ func (o *renamePVCOptions) checkIfMounted(ctx context.Context, pvc *corev1.Persi
 		for vol := range podList.Items[pod].Spec.Volumes {
 			volume := &podList.Items[pod].Spec.Volumes[vol]
 			if volume.PersistentVolumeClaim != nil && volume.PersistentVolumeClaim.ClaimName == pvc.Name {
-				return errors.Wrapf(ErrVolumeMounted, "pod %s", podList.Items[pod].Name)
+				return fmt.Errorf("%w in pod \"%s\"", ErrVolumeMounted, podList.Items[pod].Name)
 			}
 		}
 	}

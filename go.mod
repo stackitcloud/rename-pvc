@@ -3,7 +3,6 @@ module github.com/stackitcloud/rename-pvc
 go 1.18
 
 require (
-	github.com/pkg/errors v0.9.1
 	github.com/spf13/cobra v1.5.0
 	k8s.io/api v0.24.2
 	k8s.io/apimachinery v0.24.2
@@ -52,6 +51,7 @@ require (
 	github.com/onsi/ginkgo v1.16.5 // indirect
 	github.com/onsi/gomega v1.17.0 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
+	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/stretchr/testify v1.7.0 // indirect

@@ -2,9 +2,9 @@ package renamepvc
 
 import (
 	"context"
+	"errors"
 	"testing"
 
-	"github.com/pkg/errors"
 	corev1 "k8s.io/api/core/v1"
 	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -230,7 +230,7 @@ func checkRename(ctx context.Context, o *renamePVCOptions) error {
 
 	if pv.Spec.ClaimRef.Name != newPVC.Name &&
 		pv.Spec.ClaimRef.Namespace != newPVC.Namespace {
-		return errors.New("pv claimRef wrong")
+		return errors.New("pv claimRef wrong") // nolint: goerr113 // in test okay
 	}
 
 	_, err = o.k8sClient.CoreV1().PersistentVolumeClaims(o.targetNamespace).Get(ctx, o.newName, metav1.GetOptions{})
