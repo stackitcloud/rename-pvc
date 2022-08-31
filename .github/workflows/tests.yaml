@@ -57,3 +57,57 @@ jobs:
       - name: Execute build
         if: matrix.os == 'windows-latest'
         run: ./out/bin/rename-pvc.exe --help
+  test-kind:
+    strategy:
+      matrix:
+        go-version: [1.18.x]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{ matrix.go-version }}
+
+      - name: Create k8s Kind Cluster
+        uses: helm/kind-action@v1.3.0
+        with:
+          cluster_name: kind
+
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      # cache go modules
+      - uses: actions/cache@v2
+        with:
+          # In order:
+          # * Module download cache
+          # * Build cache (Linux)
+          # * Build cache (Mac)
+          # * Build cache (Windows)
+          path: |
+            ~/go/pkg/mod
+            ~/.cache/go-build
+            ~/Library/Caches/go-build
+            %LocalAppData%\go-build
+          key: ${{ runner.os }}-go-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-
+
+      - name: Build package
+        run: make build
+
+      - name: Create PVC and deployment
+        run: kubectl apply -f .github/kind-test/
+
+      - name: Wait until pod is ready
+        run:  kubectl wait --for=condition=ready pod/test
+
+      - name: Delete pod
+        run: kubectl delete --wait -f .github/kind-test/pod.yaml
+
+      - name: Execute rename
+        run: ./out/bin/rename-pvc -y pvc pvc-new
+
+      - name: Check rename
+        run: kubectl get pvc pvc-new
