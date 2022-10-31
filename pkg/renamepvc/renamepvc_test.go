@@ -230,7 +230,7 @@ func checkRename(ctx context.Context, o *renamePVCOptions) error {
 
 	if pv.Spec.ClaimRef.Name != newPVC.Name &&
 		pv.Spec.ClaimRef.Namespace != newPVC.Namespace {
-		return errors.New("pv claimRef wrong") // nolint: goerr113 // in test okay
+		return errors.New("pv claimRef wrong") //nolint: goerr113 // in test okay
 	}
 
 	_, err = o.k8sClient.CoreV1().PersistentVolumeClaims(o.targetNamespace).Get(ctx, o.newName, metav1.GetOptions{})
