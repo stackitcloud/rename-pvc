@@ -86,7 +86,7 @@ Flags:
 
 `rename-pvc` runs the following steps to rename an PVC in your Kubernetes cluster:
 
-1. Creates the new PVC with the `.spec.volumeName` set to the existing PVC
+1. Creates the new PVC with the `.spec.volumeName` set to the existing PV
    - This new PVC is now in status `Lost`
 2. Updates the `spec.claimRef` in the `PersistentVolume` to the new PVC
 3. Waits until the new PVC's status is updated to `Bound`
