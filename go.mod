@@ -3,7 +3,7 @@ module github.com/stackitcloud/rename-pvc
 go 1.20
 
 require (
-	github.com/spf13/cobra v1.7.0
+	github.com/spf13/cobra v1.8.0
 	k8s.io/api v0.28.3
 	k8s.io/apimachinery v0.28.3
 	k8s.io/cli-runtime v0.28.3
