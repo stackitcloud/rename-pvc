@@ -9,7 +9,13 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    reviewers:
+      - "dergeberl"
+      - "rgroemmer"
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "daily"
+    reviewers:
+      - "dergeberl"
+      - "rgroemmer"
