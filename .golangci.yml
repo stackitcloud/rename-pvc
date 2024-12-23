@@ -55,9 +55,10 @@ linters:
   disable-all: true
   enable:
     - bodyclose
+    - copyloopvar
     - dogsled
     - dupl
-    - exportloopref
+    - err113
     - exhaustive
     - funlen
     - gochecknoinits
@@ -66,7 +67,6 @@ linters:
     - gocyclo
     - gofmt
     - goimports
-    - gomnd
     - goprintffuncname
     - gosec
     - gosimple
@@ -74,6 +74,7 @@ linters:
     - ineffassign
     - lll
     - misspell
+    - mnd
     - nakedret
     - noctx
     - nolintlint
@@ -86,7 +87,6 @@ linters:
     - unused
     - whitespace
     - gochecknoglobals
-    - goerr113
     - prealloc
 
   # don't enable:
@@ -109,9 +109,9 @@ issues:
   exclude-rules:
     - path: _test\.go
       linters:
-        - gomnd
         - gochecknoglobals
         - gosec
+        - mnd
         - noctx
         - dogsled
 

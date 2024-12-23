@@ -58,7 +58,7 @@ func NewCmdRenamePVC(streams genericclioptions.IOStreams) *cobra.Command {
 with the same spec and rebinding the existing PersistentClaim (PV) to the newly created PVC.
 Afterwards the old PVC is automatically deleted.`,
 		Example:      fmt.Sprintf("%v oldPvcName newPvcName", command),
-		Args:         cobra.ExactArgs(2), //nolint: gomnd // needs always 2 inputs
+		Args:         cobra.ExactArgs(2), //nolint: mnd // needs always 2 inputs
 		SilenceUsage: true,
 		RunE: func(c *cobra.Command, args []string) error {
 			var err error
