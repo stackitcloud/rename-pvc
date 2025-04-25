@@ -45,7 +45,7 @@ lint-reports: out/lint.xml
 
 .PHONY: out/lint.xml
 out/lint.xml: $(GOLANGCI_LINT) out download
-	@$(GOLANGCI_LINT) run ./... --out-format checkstyle | tee "$(@)"
+	@$(GOLANGCI_LINT) run ./... --output.checkstyle.path stdout | tee "$(@)"
 
 test: ## Runs all tests
 	@go test $(ARGS) ./...
