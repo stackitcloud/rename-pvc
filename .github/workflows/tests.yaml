@@ -25,7 +25,7 @@ jobs:
           go-version: ${{ matrix.go-version }}
 
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # cache go modules
       - uses: actions/cache@v4
@@ -75,7 +75,7 @@ jobs:
           cluster_name: kind
 
       - name: Checkout code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
 
       # cache go modules
       - uses: actions/cache@v4
