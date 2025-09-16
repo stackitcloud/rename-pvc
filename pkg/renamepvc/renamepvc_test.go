@@ -9,7 +9,7 @@ import (
 	k8sErrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/cli-runtime/pkg/genericclioptions"
+	"k8s.io/cli-runtime/pkg/genericiooptions"
 	"k8s.io/client-go/kubernetes/fake"
 	k8sTesting "k8s.io/client-go/testing"
 )
@@ -113,7 +113,7 @@ func TestPVCRename(t *testing.T) {
 
 func TestConfirmCheck(t *testing.T) {
 	t.Run("Test confirmCheck with y", func(t *testing.T) {
-		streams, in, _, _ := genericclioptions.NewTestIOStreams()
+		streams, in, _, _ := genericiooptions.NewTestIOStreams()
 		o := renamePVCOptions{streams: streams}
 		in.WriteString("y\n")
 		if err := o.confirmCheck(); err != nil {
@@ -121,14 +121,14 @@ func TestConfirmCheck(t *testing.T) {
 		}
 	})
 	t.Run("Test confirmCheck with skip flag", func(t *testing.T) {
-		streams, _, _, _ := genericclioptions.NewTestIOStreams()
+		streams, _, _, _ := genericiooptions.NewTestIOStreams()
 		o := renamePVCOptions{streams: streams, confirm: true}
 		if err := o.confirmCheck(); err != nil {
 			t.Errorf("confirmCheck - got error %q", err)
 		}
 	})
 	t.Run("Test confirmCheck with n", func(t *testing.T) {
-		streams, in, _, _ := genericclioptions.NewTestIOStreams()
+		streams, in, _, _ := genericiooptions.NewTestIOStreams()
 		o := renamePVCOptions{streams: streams}
 		in.WriteString("n\n")
 		if err := o.confirmCheck(); !errors.Is(err, ErrConfirmationNotSuccessful) {
@@ -136,11 +136,19 @@ func TestConfirmCheck(t *testing.T) {
 		}
 	})
 	t.Run("Test confirmCheck with unknown", func(t *testing.T) {
-		streams, in, _, _ := genericclioptions.NewTestIOStreams()
+		streams, in, _, _ := genericiooptions.NewTestIOStreams()
 		o := renamePVCOptions{streams: streams}
 		in.WriteString("unknown\n")
 		if err := o.confirmCheck(); !errors.Is(err, ErrConfirmationUnknown) {
 			t.Errorf("expect %q - got error %q", ErrConfirmationUnknown, err)
+		}
+	})
+	t.Run("Test confirmCheck with windows newline", func(t *testing.T) {
+		streams, in, _, _ := genericiooptions.NewTestIOStreams()
+		o := renamePVCOptions{streams: streams}
+		in.WriteString("yes\r\n")
+		if err := o.confirmCheck(); err != nil {
+			t.Errorf("confirmCheck - got error %q", err)
 		}
 	})
 }
@@ -153,8 +161,8 @@ func initTestSetup(
 	extraObjects ...runtime.Object,
 ) (renamePVCOptions, error) {
 	// init client
-	streams, _, _, _ := genericclioptions.NewTestIOStreams()
-	client := fake.NewSimpleClientset(extraObjects...)
+	streams, _, _, _ := genericiooptions.NewTestIOStreams()
+	client := fake.NewClientset(extraObjects...)
 	// the fake client did not set volumes to bound
 	// add reactor to set every volume to Phase bound
 	client.PrependReactor(

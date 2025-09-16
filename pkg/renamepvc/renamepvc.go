@@ -117,18 +117,18 @@ func (o *renamePVCOptions) confirmCheck() error {
 	if err != nil {
 		return err
 	}
-	input, err := bufio.NewReader(o.streams.In).ReadString('\n')
-	if err != nil {
-		return err
+
+	scanner := bufio.NewScanner(o.streams.In)
+	if scanner.Scan() {
+		input := scanner.Text()
+		switch input {
+		case "y", "yes":
+			return nil
+		case "n", "no":
+			return ErrConfirmationNotSuccessful
+		}
 	}
-	switch strings.TrimSuffix(input, "\n") {
-	case "y", "yes":
-		return nil
-	case "n", "no":
-		return ErrConfirmationNotSuccessful
-	default:
-		return ErrConfirmationUnknown
-	}
+	return ErrConfirmationUnknown
 }
 
 func getK8sClient(configFlags *genericclioptions.ConfigFlags) (*kubernetes.Clientset, error) {
