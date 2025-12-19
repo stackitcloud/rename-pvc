@@ -2,7 +2,7 @@ SHELL=/bin/bash -e -o pipefail
 PWD = $(shell pwd)
 
 # constants
-GOLANGCI_VERSION = 2.1.5
+GOLANGCI_VERSION = 2.7.2
 all: git-hooks  tidy ## Initializes all tools
 
 out:
