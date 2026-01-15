@@ -18,9 +18,6 @@
         'digest',
       ],
       automerge: true,
-      addLabels: [
-        'skip-review',
-      ],
     },
     {
       groupName: 'kubernetes',
@@ -46,9 +43,6 @@
         'patch',
       ],
       automerge: true,
-      addLabels: [
-        'skip-review',
-      ],
     },
   ],
 }
