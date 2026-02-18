@@ -14,7 +14,6 @@ jobs:
   test:
     strategy:
       matrix:
-        go-version: [1.25.x]
         os: [ubuntu-latest, macos-latest, windows-latest]
     runs-on: ${{ matrix.os }}
 
@@ -22,7 +21,7 @@ jobs:
       - name: Install Go
         uses: actions/setup-go@v6
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: 1.25.x
 
       - name: Checkout code
         uses: actions/checkout@v6
@@ -58,16 +57,13 @@ jobs:
         if: matrix.os == 'windows-latest'
         run: ./out/bin/rename-pvc.exe --help
   test-kind:
-    strategy:
-      matrix:
-        go-version: [1.25.x]
     runs-on: ubuntu-latest
 
     steps:
       - name: Install Go
         uses: actions/setup-go@v6
         with:
-          go-version: ${{ matrix.go-version }}
+          go-version: 1.25.x
 
       - name: Create k8s Kind Cluster
         uses: helm/kind-action@v1.14.0
