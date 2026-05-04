@@ -60,7 +60,7 @@ func TestPVCRename(t *testing.T) {
 			ObjectMeta: metav1.ObjectMeta{Name: "pod", Namespace: "test3"},
 			Spec: corev1.PodSpec{
 				Volumes: []corev1.Volume{{
-					Name: "test",
+					Name: "testvol",
 					VolumeSource: corev1.VolumeSource{
 						PersistentVolumeClaim: &corev1.PersistentVolumeClaimVolumeSource{
 							ClaimName: "test3-old", ReadOnly: false,
