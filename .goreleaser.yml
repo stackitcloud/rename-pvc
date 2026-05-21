@@ -1,7 +1,9 @@
+version: 2
+
 project_name: rename-pvc
 
 snapshot:
-  name_template: '{{ .Tag }}-SNAPSHOT'
+  version_template: '{{ .Tag }}-SNAPSHOT'
 
 before:
   hooks:
@@ -29,8 +31,8 @@ builds:
       - arm64
 
 archives:
-  - format: tar.gz
+  - formats: ["tar.gz"]
     name_template: '{{ .ProjectName }}-{{ .Os }}-{{ .Arch }}'
     format_overrides:
       - goos: windows
-        format: zip
+        formats: ["zip"]
