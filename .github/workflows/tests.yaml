@@ -107,3 +107,28 @@ jobs:
 
       - name: Check rename
         run: kubectl get pvc pvc-new
+  test-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: 1.26.x
+
+      - name: Validate goreleaser config
+        uses: goreleaser/goreleaser-action@v7
+        with:
+          version: v2.15.4
+          args: check
+
+      - name: Create snapshot release (dry-run)
+        uses: goreleaser/goreleaser-action@v7
+        with:
+          version: v2.15.4
+          args: release --snapshot --clean
