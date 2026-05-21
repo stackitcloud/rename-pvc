@@ -92,13 +92,6 @@ Flags:
 3. Waits until the new PVC's status is updated to `Bound`
 4. Deletes the old PVC
 
-## Maintainers
-
-| Name                                                 | Email                           |
-|:-----------------------------------------------------|:--------------------------------|
-| [@dergeberl](https://github.com/dergeberl)           | maximilian.geberl@stackit.de    |
-| [@einfachnuralex](https://github.com/einfachnuralex) | alexander.predeschly@stackit.de |
-
 ## Contribution
 
 If you want to contribute to `rename-pvc` please have a look at our [contribution guidelines](CONTRIBUTING.md).
