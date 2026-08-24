@@ -3,7 +3,7 @@ PWD = $(shell pwd)
 
 # constants
 # renovate: datasource=github-releases depName=golangci/golangci-lint
-GOLANGCI_VERSION = 2.12.2
+GOLANGCI_VERSION = 2.13.1
 all: git-hooks  tidy ## Initializes all tools
 
 out:
