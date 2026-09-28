@@ -124,11 +124,11 @@ jobs:
       - name: Validate goreleaser config
         uses: goreleaser/goreleaser-action@v7
         with:
-          version: v2.15.4
+          version: v2.18.2
           args: check
 
       - name: Create snapshot release (dry-run)
         uses: goreleaser/goreleaser-action@v7
         with:
-          version: v2.15.4
+          version: v2.18.2
           args: release --snapshot --clean
